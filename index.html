@@ -3,166 +3,467 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣泡排序學習工具</title>
+    <title>氣泡排序視覺化學習工具</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        h1 {
-            color: #333;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
         .container {
-            max-width: 800px;
-            margin: auto;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .sidebar {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .sidebar h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .input-section {
             background: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
         }
-        .array {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
         }
-        .element {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #4CAF50;
-            color: white;
-            margin: 0 5px;
+        .input-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
             border-radius: 5px;
-            font-size: 18px;
-            transition: background-color 0.3s;
+            font-size: 14px;
+            margin-bottom: 15px;
         }
-        .comparing {
-            background-color: #FF9800;
+        .input-section input:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #f0f4ff;
         }
-        .swapping {
-            background-color: #F44336;
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         button {
-            padding: 10px 20px;
-            margin: 10px;
-            background-color: #2196F3;
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
         }
         button:hover {
-            background-color: #0b7dda;
+            background: #5568d3;
+            transform: translateY(-2px);
         }
-        .explanation {
+        button:active {
+            transform: translateY(0);
+        }
+        .visualization {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 8px;
+            min-height: 250px;
             margin: 20px 0;
-            padding: 10px;
-            background-color: #e7f3ff;
-            border-left: 5px solid #2196F3;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .bar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+            min-width: 40px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .bar .value {
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .bar.comparing {
+            background: linear-gradient(180deg, #FF9800 0%, #F57C00 100%);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+        }
+        .bar.swapping {
+            background: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.8);
+            animation: shake 0.3s;
+        }
+        .bar.sorted {
+            background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .step-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step-info strong {
+            color: #1976D2;
+        }
+        .principle {
+            background: #f3e5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .principle p {
+            margin-bottom: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .speed-control input[type="range"] {
+            width: 150px;
+        }
+        .stats {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-size: 14px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>氣泡排序學習工具</h1>
-        <div class="explanation">
-            <h2>氣泡排序原理</h2>
-            <p>氣泡排序是一種簡單的排序演算法。它重複地走訪要排序的數列，一次比較兩個元素，如果它們的順序錯誤就把它們交換過來。走訪數列的工作是重複地進行直到沒有再需要交換，也就是說該數列已經排序完成。</p>
-            <p>這個演算法的名字由來是因為越小的元素會經由交換慢慢「浮」到數列的頂端。</p>
+        <div class="header">
+            <h1>🔄 氣泡排序視覺化學習工具</h1>
+            <p>直觀觀察氣泡排序的過程</p>
         </div>
-        <h2>示例數組</h2>
-        <div class="array" id="arrayContainer">
-            <div class="element">5</div>
-            <div class="element">3</div>
-            <div class="element">8</div>
-            <div class="element">4</div>
-            <div class="element">2</div>
-        </div>
-        <div>
-            <button id="nextStep">下一步</button>
-            <button id="reset">重新開始</button>
-        </div>
-        <div class="explanation" id="stepExplanation">
-            <p>點擊「下一步」來逐步觀察排序過程。</p>
+        
+        <div class="content">
+            <div class="main-area">
+                <div class="visualization">
+                    <h2>排序過程視覺化</h2>
+                    <div class="array-container" id="arrayContainer"></div>
+                    <div class="step-info" id="stepInfo">準備就緒，請輸入數字開始排序</div>
+                </div>
+
+                <div class="controls">
+                    <button id="nextStepBtn">➤ 下一步</button>
+                    <button id="autoPlayBtn">▶ 自動播放</button>
+                    <button id="pauseBtn" style="display: none;">⏸ 暫停</button>
+                    <button id="resetBtn">🔄 重新開始</button>
+                </div>
+
+                <div class="speed-control">
+                    <label>播放速度：</label>
+                    <input type="range" id="speedSlider" min="100" max="1000" value="500" step="100">
+                    <span id="speedValue">500ms</span>
+                </div>
+
+                <div class="stats" id="statsContainer" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-label">比較次數</div>
+                        <div class="stat-value" id="comparisons">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">交換次數</div>
+                        <div class="stat-value" id="swaps">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">當前輪次</div>
+                        <div class="stat-value" id="pass">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3>📊 輸入數據</h3>
+                <div class="input-section">
+                    <label>輸入要排序的數字（用逗號分隔）:</label>
+                    <input type="text" id="numberInput" placeholder="例如: 5,3,8,4,2" value="5,3,8,4,2">
+                    <div class="buttons">
+                        <button onclick="loadNumbers()">載入數據</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 20px;">📖 氣泡排序原理</h3>
+                <div class="principle">
+                    <p><strong>定義：</strong>氣泡排序是一種簡單的排序演算法，透過重複地比較相鄰的兩個元素，如果順序錯誤就交換它們。</p>
+                    <p><strong>過程：</strong></p>
+                    <ul style="margin-left: 15px;">
+                        <li>比較相鄰的兩個元素</li>
+                        <li>如果前面的大於後面的，交換它們</li>
+                        <li>重複此過程直到陣列排序完成</li>
+                    </ul>
+                    <p><strong>時間複雜度：</strong> O(n²)</p>
+                    <p><strong>特點：</strong>簡單易懂，但效率較低</p>
+                </div>
+
+                <h3 style="margin-top: 20px;">🎨 顏色說明</h3>
+                <div class="principle">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #FF9800, #F57C00); border-radius: 3px;"></div>
+                        <span>正在比較</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #F44336, #D32F2F); border-radius: 3px;"></div>
+                        <span>正在交換</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #4CAF50, #388E3C); border-radius: 3px;"></div>
+                        <span>已排序完成</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let array = [5, 3, 8, 4, 2];
-        let elements = document.querySelectorAll('.element');
-        let step = 0;
+        let originalArray = [...array];
         let i = 0;
         let j = 0;
-        let swapped = false;
         let pass = 0;
+        let comparisons = 0;
+        let swaps = 0;
+        let isAutoPlaying = false;
+        let autoPlayTimer = null;
 
-        function updateDisplay() {
-            elements.forEach((el, index) => {
-                el.textContent = array[index];
-                el.classList.remove('comparing', 'swapping');
+        function createBars() {
+            const container = document.getElementById('arrayContainer');
+            container.innerHTML = '';
+            const maxValue = Math.max(...array);
+            
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = (value / maxValue * 200) + 'px';
+                bar.innerHTML = `<div class="value">${value}</div>`;
+                bar.id = `bar-${index}`;
+                container.appendChild(bar);
             });
         }
 
-        function highlightComparing(idx1, idx2) {
-            elements[idx1].classList.add('comparing');
-            elements[idx2].classList.add('comparing');
-        }
-
-        function highlightSwapping(idx1, idx2) {
-            elements[idx1].classList.add('swapping');
-            elements[idx2].classList.add('swapping');
+        function updateStats() {
+            document.getElementById('comparisons').textContent = comparisons;
+            document.getElementById('swaps').textContent = swaps;
+            document.getElementById('pass').textContent = pass + 1;
         }
 
         function nextStep() {
-            if (pass >= array.length - 1) {
-                document.getElementById('stepExplanation').innerHTML = '<p>排序完成！</p>';
+            const n = array.length;
+
+            if (pass >= n - 1) {
+                document.getElementById('stepInfo').innerHTML = '✅ <strong>排序完成！</strong> 所有元素已按升序排列。';
                 return;
             }
 
-            if (j < array.length - 1 - pass) {
-                highlightComparing(j, j + 1);
+            if (j < n - 1 - pass) {
+                // 比較
+                const bar1 = document.getElementById(`bar-${j}`);
+                const bar2 = document.getElementById(`bar-${j + 1}`);
+                bar1.classList.add('comparing');
+                bar2.classList.add('comparing');
+
+                comparisons++;
+
                 if (array[j] > array[j + 1]) {
-                    // 交換
-                    [array[j], array[j + 1]] = [array[j + 1], array[j]];
-                    swapped = true;
-                    highlightSwapping(j, j + 1);
-                    document.getElementById('stepExplanation').innerHTML = `<p>比較 ${array[j+1]} 和 ${array[j]}，順序錯誤，交換它們。</p>`;
+                    // 需要交換
+                    setTimeout(() => {
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                        bar1.classList.remove('comparing');
+                        bar2.classList.remove('comparing');
+                        bar1.classList.add('swapping');
+                        bar2.classList.add('swapping');
+                        
+                        setTimeout(() => {
+                            swaps++;
+                            createBars();
+                            document.getElementById('stepInfo').innerHTML = `<strong>第 ${pass + 1} 輪：</strong> 比較 <strong>${array[j+1]}</strong> 和 <strong>${array[j]}</strong>，順序錯誤，已交換。`;
+                            updateStats();
+                        }, 300);
+                    }, 300);
                 } else {
-                    document.getElementById('stepExplanation').innerHTML = `<p>比較 ${array[j]} 和 ${array[j+1]}，順序正確，無需交換。</p>`;
+                    setTimeout(() => {
+                        bar1.classList.remove('comparing');
+                        bar2.classList.remove('comparing');
+                        document.getElementById('stepInfo').innerHTML = `<strong>第 ${pass + 1} 輪：</strong> 比較 <strong>${array[j]}</strong> 和 <strong>${array[j + 1]}</strong>，順序正確，無需交換。`;
+                        updateStats();
+                    }, 300);
                 }
                 j++;
             } else {
-                if (!swapped) {
-                    document.getElementById('stepExplanation').innerHTML = '<p>沒有交換發生，排序完成！</p>';
-                    return;
-                }
                 pass++;
                 j = 0;
-                swapped = false;
-                document.getElementById('stepExplanation').innerHTML = `<p>完成第 ${pass} 輪遍歷，開始下一輪。</p>`;
+                
+                // 將已排序的元素標記為綠色
+                for (let k = n - pass; k < n; k++) {
+                    document.getElementById(`bar-${k}`).classList.add('sorted');
+                }
+                
+                document.getElementById('stepInfo').innerHTML = `<strong>第 ${pass} 輪完成！</strong> 最大的 ${pass} 個元素已到達最後的位置。`;
+                updateStats();
             }
-            updateDisplay();
+        }
+
+        function autoPlay() {
+            isAutoPlaying = true;
+            document.getElementById('autoPlayBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            
+            function playNext() {
+                const n = array.length;
+                if (pass < n - 1 || j < n - 1 - pass) {
+                    nextStep();
+                    autoPlayTimer = setTimeout(playNext, 800 - (document.getElementById('speedSlider').value - 100));
+                } else {
+                    isAutoPlaying = false;
+                    document.getElementById('autoPlayBtn').style.display = 'inline-block';
+                    document.getElementById('pauseBtn').style.display = 'none';
+                }
+            }
+            playNext();
+        }
+
+        function pause() {
+            isAutoPlaying = false;
+            if (autoPlayTimer) clearTimeout(autoPlayTimer);
+            document.getElementById('autoPlayBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'none';
         }
 
         function reset() {
-            array = [5, 3, 8, 4, 2];
-            step = 0;
+            pause();
+            array = [...originalArray];
             i = 0;
             j = 0;
-            swapped = false;
             pass = 0;
-            updateDisplay();
-            elements.forEach(el => el.classList.remove('comparing', 'swapping'));
-            document.getElementById('stepExplanation').innerHTML = '<p>點擊「下一步」來逐步觀察排序過程。</p>';
+            comparisons = 0;
+            swaps = 0;
+            createBars();
+            document.getElementById('stepInfo').innerHTML = '準備就緒，已重新開始';
+            updateStats();
         }
 
-        document.getElementById('nextStep').addEventListener('click', nextStep);
-        document.getElementById('reset').addEventListener('click', reset);
+        function loadNumbers() {
+            const input = document.getElementById('numberInput').value;
+            const numbers = input.split(',').map(n => {
+                const num = parseInt(n.trim());
+                return isNaN(num) ? 0 : num;
+            });
+            
+            if (numbers.length > 0) {
+                array = numbers;
+                originalArray = [...array];
+                reset();
+                document.getElementById('statsContainer').style.display = 'grid';
+            }
+        }
 
-        updateDisplay();
+        document.getElementById('nextStepBtn').addEventListener('click', nextStep);
+        document.getElementById('autoPlayBtn').addEventListener('click', autoPlay);
+        document.getElementById('pauseBtn').addEventListener('click', pause);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = e.target.value + 'ms';
+        });
+
+        // 初始化
+        createBars();
+        document.getElementById('statsContainer').style.display = 'grid';
+        updateStats();
     </script>
 </body>
 </html>
