@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序學習工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .array {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .element {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #4CAF50;
+            color: white;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .comparing {
+            background-color: #FF9800;
+        }
+        .swapping {
+            background-color: #F44336;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0b7dda;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #e7f3ff;
+            border-left: 5px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>氣泡排序學習工具</h1>
+        <div class="explanation">
+            <h2>氣泡排序原理</h2>
+            <p>氣泡排序是一種簡單的排序演算法。它重複地走訪要排序的數列，一次比較兩個元素，如果它們的順序錯誤就把它們交換過來。走訪數列的工作是重複地進行直到沒有再需要交換，也就是說該數列已經排序完成。</p>
+            <p>這個演算法的名字由來是因為越小的元素會經由交換慢慢「浮」到數列的頂端。</p>
+        </div>
+        <h2>示例數組</h2>
+        <div class="array" id="arrayContainer">
+            <div class="element">5</div>
+            <div class="element">3</div>
+            <div class="element">8</div>
+            <div class="element">4</div>
+            <div class="element">2</div>
+        </div>
+        <div>
+            <button id="nextStep">下一步</button>
+            <button id="reset">重新開始</button>
+        </div>
+        <div class="explanation" id="stepExplanation">
+            <p>點擊「下一步」來逐步觀察排序過程。</p>
+        </div>
+    </div>
+
+    <script>
+        let array = [5, 3, 8, 4, 2];
+        let elements = document.querySelectorAll('.element');
+        let step = 0;
+        let i = 0;
+        let j = 0;
+        let swapped = false;
+        let pass = 0;
+
+        function updateDisplay() {
+            elements.forEach((el, index) => {
+                el.textContent = array[index];
+                el.classList.remove('comparing', 'swapping');
+            });
+        }
+
+        function highlightComparing(idx1, idx2) {
+            elements[idx1].classList.add('comparing');
+            elements[idx2].classList.add('comparing');
+        }
+
+        function highlightSwapping(idx1, idx2) {
+            elements[idx1].classList.add('swapping');
+            elements[idx2].classList.add('swapping');
+        }
+
+        function nextStep() {
+            if (pass >= array.length - 1) {
+                document.getElementById('stepExplanation').innerHTML = '<p>排序完成！</p>';
+                return;
+            }
+
+            if (j < array.length - 1 - pass) {
+                highlightComparing(j, j + 1);
+                if (array[j] > array[j + 1]) {
+                    // 交換
+                    [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                    swapped = true;
+                    highlightSwapping(j, j + 1);
+                    document.getElementById('stepExplanation').innerHTML = `<p>比較 ${array[j+1]} 和 ${array[j]}，順序錯誤，交換它們。</p>`;
+                } else {
+                    document.getElementById('stepExplanation').innerHTML = `<p>比較 ${array[j]} 和 ${array[j+1]}，順序正確，無需交換。</p>`;
+                }
+                j++;
+            } else {
+                if (!swapped) {
+                    document.getElementById('stepExplanation').innerHTML = '<p>沒有交換發生，排序完成！</p>';
+                    return;
+                }
+                pass++;
+                j = 0;
+                swapped = false;
+                document.getElementById('stepExplanation').innerHTML = `<p>完成第 ${pass} 輪遍歷，開始下一輪。</p>`;
+            }
+            updateDisplay();
+        }
+
+        function reset() {
+            array = [5, 3, 8, 4, 2];
+            step = 0;
+            i = 0;
+            j = 0;
+            swapped = false;
+            pass = 0;
+            updateDisplay();
+            elements.forEach(el => el.classList.remove('comparing', 'swapping'));
+            document.getElementById('stepExplanation').innerHTML = '<p>點擊「下一步」來逐步觀察排序過程。</p>';
+        }
+
+        document.getElementById('nextStep').addEventListener('click', nextStep);
+        document.getElementById('reset').addEventListener('click', reset);
+
+        updateDisplay();
+    </script>
+</body>
+</html>
