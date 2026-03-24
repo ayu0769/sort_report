@@ -1,0 +1,459 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇排序視覺化學習工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .sidebar {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .sidebar h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+        }
+        .input-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .input-section input:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #f0f4ff;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .visualization {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 8px;
+            min-height: 250px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .bar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+            min-width: 40px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .bar .value {
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .bar.comparing {
+            background: linear-gradient(180deg, #FF9800 0%, #F57C00 100%);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+        }
+        .bar.selected {
+            background: linear-gradient(180deg, #f39c12 0%, #d35400 100%);
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.6);
+        }
+        .bar.swapping {
+            background: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.8);
+            animation: shake 0.3s;
+        }
+        .bar.sorted {
+            background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .step-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .step-info strong {
+            color: #1976D2;
+        }
+        .principle {
+            background: #f3e5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .principle p {
+            margin-bottom: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .speed-control input[type="range"] {
+            width: 150px;
+        }
+        .stats {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-size: 14px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> 選擇排序視覺化學習工具</h1>
+            <p>直觀觀察選擇排序的過程</p>
+        </div>
+        
+        <div class="content">
+            <div class="main-area">
+                <div class="visualization">
+                    <h2>排序過程視覺化</h2>
+                    <div class="array-container" id="arrayContainer"></div>
+                    <div class="step-info" id="stepInfo">準備就緒，請輸入數字開始排序</div>
+                </div>
+
+                <div class="controls">
+                    <button id="nextStepBtn"> 下一步</button>
+                    <button id="autoPlayBtn"> 自動播放</button>
+                    <button id="pauseBtn" style="display: none;"> 暫停</button>
+                    <button id="resetBtn"> 重新開始</button>
+                </div>
+
+                <div class="speed-control">
+                    <label>播放速度：</label>
+                    <input type="range" id="speedSlider" min="100" max="1000" value="500" step="100">
+                    <span id="speedValue">500ms</span>
+                </div>
+
+                <div class="stats" id="statsContainer" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-label">比較次數</div>
+                        <div class="stat-value" id="comparisons">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">交換次數</div>
+                        <div class="stat-value" id="swaps">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">已排序元素</div>
+                        <div class="stat-value" id="sortedCount">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3> 輸入數據</h3>
+                <div class="input-section">
+                    <label>輸入要排序的數字（用逗號分隔）:</label>
+                    <input type="text" id="numberInput" placeholder="例如: 64,25,12,22,11" value="64,25,12,22,11">
+                    <div class="buttons">
+                        <button onclick="loadNumbers()">載入數據</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 20px;"> 選擇排序原理</h3>
+                <div class="principle">
+                    <p><strong>定義：</strong>選擇排序將陣列分成已排序與未排序兩部分，從未排序部分挑最小值並與最前方元素交換。</p>
+                    <p><strong>過程：</strong></p>
+                    <ul style="margin-left: 15px;">
+                        <li>從 i 開始，找出最小值索引 minIndex</li>
+                        <li>如果 minIndex != i，交換位置 i 與 minIndex</li>
+                        <li>將 i 往前推一位，重複直到結束</li>
+                    </ul>
+                    <p><strong>時間複雜度：</strong> O(n)</p>
+                    <p><strong>特點：</strong>原地排序 (in-place)，穩定性取決實作（此版本非穩定）。</p>
+                </div>
+
+                <h3 style="margin-top: 20px;"> 顏色說明</h3>
+                <div class="principle">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #FF9800, #F57C00); border-radius: 3px;"></div>
+                        <span>正在比較</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #f39c12, #d35400); border-radius: 3px;"></div>
+                        <span>最小值候選 (minIndex)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #4CAF50, #388E3C); border-radius: 3px;"></div>
+                        <span>已定位為已排序</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let array = [64, 25, 12, 22, 11];
+        let originalArray = [...array];
+        let i = 0;
+        let j = 1;
+        let minIndex = 0;
+        let comparisons = 0;
+        let swaps = 0;
+        let sortedCount = 0;
+        let isAutoPlaying = false;
+        let autoPlayTimer = null;
+
+        function createBars() {
+            const container = document.getElementById('arrayContainer');
+            container.innerHTML = '';
+            const maxValue = Math.max(...array);
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = (value / maxValue * 200) + 'px';
+                bar.innerHTML = `<div class="value">${value}</div>`;
+                if (index === j) bar.classList.add('comparing');
+                if (index === minIndex) bar.classList.add('selected');
+                if (index < i) bar.classList.add('sorted');
+                container.appendChild(bar);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('comparisons').textContent = comparisons;
+            document.getElementById('swaps').textContent = swaps;
+            document.getElementById('sortedCount').textContent = sortedCount;
+        }
+
+        function nextStep() {
+            const n = array.length;
+            if (i >= n - 1) {
+                document.getElementById('stepInfo').innerHTML = ' <strong>排序完成！</strong>';
+                sortedCount = n;
+                updateStats();
+                return;
+            }
+
+            if (j === i + 1) {
+                minIndex = i;
+                document.getElementById('stepInfo').innerHTML = `<strong>第 ${i + 1} 回合:</strong> 設定 minIndex=${minIndex} (值=${array[minIndex]})`;
+            }
+
+            if (j < n) {
+                comparisons++;
+                document.getElementById('stepInfo').innerHTML = `<strong>比較</strong> index${j} (${array[j]}) 與 minIndex ${minIndex} (${array[minIndex]})`;
+
+                if (array[j] < array[minIndex]) {
+                    minIndex = j;
+                    document.getElementById('stepInfo').innerHTML += `<br> 新 minIndex=${minIndex} (值=${array[minIndex]})`;
+                }
+
+                j++;
+                createBars();
+                updateStats();
+                return;
+            }
+
+            if (minIndex !== i) {
+                [array[i], array[minIndex]] = [array[minIndex], array[i]];
+                swaps++;
+                document.getElementById('stepInfo').innerHTML = `<strong>交換</strong> index${i} 與 index${minIndex}`;
+            } else {
+                document.getElementById('stepInfo').innerHTML = `<strong>不交換</strong>，i=${i} 已是最小值`;
+            }
+
+            i++;
+            j = i + 1;
+            sortedCount = i;
+            createBars();
+            updateStats();
+        }
+
+        function autoPlay() {
+            isAutoPlaying = true;
+            document.getElementById('autoPlayBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            const run = () => {
+                if (i < array.length - 1) {
+                    nextStep();
+                    autoPlayTimer = setTimeout(run, 1100 - (document.getElementById('speedSlider').value - 100));
+                } else {
+                    pause();
+                }
+            };
+            run();
+        }
+
+        function pause() {
+            isAutoPlaying = false;
+            if (autoPlayTimer) clearTimeout(autoPlayTimer);
+            document.getElementById('autoPlayBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'none';
+        }
+
+        function reset() {
+            pause();
+            array = [...originalArray];
+            i = 0;
+            j = 1;
+            minIndex = 0;
+            comparisons = 0;
+            swaps = 0;
+            sortedCount = 0;
+            createBars();
+            document.getElementById('stepInfo').innerHTML = '準備就緒，請輸入數字開始排序';
+            updateStats();
+        }
+
+        function loadNumbers() {
+            const input = document.getElementById('numberInput').value;
+            const numbers = input.split(',').map(n => {
+                const num = parseInt(n.trim(), 10);
+                return isNaN(num) ? 0 : num;
+            });
+            if (numbers.length > 0) {
+                array = numbers;
+                originalArray = [...array];
+                reset();
+                document.getElementById('statsContainer').style.display = 'grid';
+            }
+        }
+
+        document.getElementById('nextStepBtn').addEventListener('click', nextStep);
+        document.getElementById('autoPlayBtn').addEventListener('click', autoPlay);
+        document.getElementById('pauseBtn').addEventListener('click', pause);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = `${e.target.value}ms`;
+        });
+
+        createBars();
+        document.getElementById('statsContainer').style.display = 'grid';
+        updateStats();
+    </script>
+</body>
+</html>
