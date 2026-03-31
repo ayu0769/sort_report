@@ -342,11 +342,12 @@
             document.getElementById('current').textContent = i;
         }
 
-        function nextStep() {
+        function nextStep(onComplete = null) {
             const n = array.length;
 
             if (i >= n) {
                 document.getElementById('stepInfo').innerHTML = '✅ <strong>排序完成！</strong> 所有元素已按升序排列。';
+                if (onComplete) onComplete();
                 return;
             }
 
@@ -359,6 +360,10 @@
 
                 comparisons++;
 
+                // 記錄交換前的值用於訊息
+                const leftVal = array[j];
+                const rightVal = array[j + 1];
+
                 setTimeout(() => {
                     [array[j], array[j + 1]] = [array[j + 1], array[j]];
                     bar1.classList.remove('comparing');
@@ -369,13 +374,15 @@
                     setTimeout(() => {
                         insertions++;
                         createBars();
-                        document.getElementById('stepInfo').innerHTML = `<strong>插入元素 ${array[j+1]}：</strong> 與 <strong>${array[j]}</strong> 比較，順序錯誤，已交換。`;
+                        document.getElementById('stepInfo').innerHTML = `<strong>插入元素 ${rightVal}：</strong> 與 <strong>${leftVal}</strong> 比較，順序錯誤，已交換。`;
                         updateStats();
                         j--;
+                        if (onComplete) onComplete();
                     }, 300);
                 }, 300);
             } else {
                 // 插入完成，移動到下一個元素
+                const completedElement = array[i];
                 i++;
                 j = i - 1;
                 
@@ -385,9 +392,10 @@
                 }
                 
                 if (i < n) {
-                    document.getElementById('stepInfo').innerHTML = `<strong>元素 ${array[i]} 已插入完成！</strong> 開始處理下一個元素。`;
+                    document.getElementById('stepInfo').innerHTML = `<strong>元素 ${completedElement} 已插入完成！</strong> 開始處理下一個元素。`;
                 }
                 updateStats();
+                if (onComplete) onComplete();
             }
         }
 
@@ -398,9 +406,10 @@
             
             function playNext() {
                 const n = array.length;
-                if (i < n) {
-                    nextStep();
-                    autoPlayTimer = setTimeout(playNext, 800 - (document.getElementById('speedSlider').value - 100));
+                if (i < n && isAutoPlaying) {
+                    nextStep(() => {
+                        autoPlayTimer = setTimeout(playNext, 800 - (document.getElementById('speedSlider').value - 100));
+                    });
                 } else {
                     isAutoPlaying = false;
                     document.getElementById('autoPlayBtn').style.display = 'inline-block';
