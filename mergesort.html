@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合併排序視覺化學習工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4b79a1 0%, #283e51 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4b79a1 0%, #283e51 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        .section h2 {
+            color: #263a5b;
+            margin-bottom: 15px;
+        }
+        .section p {
+            line-height: 1.75;
+            margin-bottom: 12px;
+        }
+        .instructions {
+            display: grid;
+            gap: 12px;
+        }
+        .instructions li {
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            list-style: none;
+        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .sidebar .card {
+            background: #eef2ff;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid #6366f1;
+        }
+        .sidebar .card h3 {
+            margin-bottom: 12px;
+            color: #4f46e5;
+        }
+        .input-section {
+            display: grid;
+            gap: 12px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #4f46e5;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        button:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+        .visualization {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 8px;
+            min-height: 260px;
+            padding: 24px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+        }
+        .bar {
+            position: relative;
+            width: 40px;
+            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .bar .value {
+            position: absolute;
+            bottom: 6px;
+            font-size: 13px;
+        }
+        .bar.comparing {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 0 16px rgba(245,158,11,0.4);
+        }
+        .bar.merging {
+            background: linear-gradient(180deg, #10b981 0%, #047857 100%);
+            box-shadow: 0 0 16px rgba(16,185,129,0.4);
+        }
+        .bar.sorted {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 0 16px rgba(34,197,94,0.4);
+        }
+        .notice {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .footer-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .footer-link a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        @media (max-width: 980px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔀 合併排序視覺化學習工具</h1>
+            <p>透過分治與合併的步驟，理解合併排序如何把資料分開，再重新組合成有序序列。</p>
+        </div>
+
+        <div class="content">
+            <div class="main-area">
+                <div class="section">
+                    <h2>合併排序原理</h2>
+                    <p>合併排序是一種穩定排序演算法，採用<strong>分治法</strong>。它先將陣列分割成小段，直到每段只有一個元素，然後再逐步將這些小段合併成有序陣列。</p>
+                    <ul class="instructions">
+                        <li>第一步：不斷分割陣列成左右兩半。</li>
+                        <li>第二步：對左右兩半分別遞迴排序。</li>
+                        <li>第三步：將已排序的左右子陣列合併為一個有序陣列。</li>
+                    </ul>
+                </div>
+
+                <div class="section visualization">
+                    <h2>視覺化示範</h2>
+                    <div class="notice">輸入數字（逗號分隔）或使用隨機生成，點擊「開始排序」即可觀察每次合併過程。</div>
+                    <div class="array-container" id="arrayContainer"></div>
+                    <div class="step-info" id="stepInfo">目前尚未開始排序。</div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h3>操作說明</h3>
+                    <div class="input-section">
+                        <label for="arrayInput">輸入數值</label>
+                        <input id="arrayInput" type="text" placeholder="例如：5,2,9,1,6" value="8,4,1,7,3,6,2">
+                        <div class="buttons">
+                            <button id="randomBtn">隨機生成</button>
+                            <button id="startBtn">開始排序</button>
+                            <button id="resetBtn">重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>複雜度與特點</h3>
+                    <p><strong>時間複雜度：</strong>平均 O(n log n)，最差 O(n log n)</p>
+                    <p><strong>空間複雜度：</strong>O(n)</p>
+                    <p><strong>優點：</strong>穩定排序，適合大量資料。</p>
+                    <p><strong>缺點：</strong>需要額外儲存空間來合併資料。</p>
+                </div>
+
+                <div class="card">
+                    <h3>教學步驟</h3>
+                    <p>1. 分割：不斷將陣列一分為二。</p>
+                    <p>2. 排序：將每個小陣列視為已排序。</p>
+                    <p>3. 合併：比較左右子陣列元素，依序放入新陣列。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-link">
+            <a href="index.html">← 返回排序演算法學習中心</a>
+        </div>
+    </div>
+
+    <script>
+        const arrayInput = document.getElementById('arrayInput');
+        const arrayContainer = document.getElementById('arrayContainer');
+        const stepInfo = document.getElementById('stepInfo');
+        const randomBtn = document.getElementById('randomBtn');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let currentArray = [];
+        let animationSteps = [];
+        let isRunning = false;
+
+        function renderArray(array, highlights = {}) {
+            arrayContainer.innerHTML = '';
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${Math.max(value, 10) * 3}px`;
+                bar.style.width = '40px';
+                if (highlights.comparing && highlights.comparing.includes(index)) {
+                    bar.classList.add('comparing');
+                }
+                if (highlights.merging && highlights.merging.includes(index)) {
+                    bar.classList.add('merging');
+                }
+                if (highlights.sorted && highlights.sorted.includes(index)) {
+                    bar.classList.add('sorted');
+                }
+                const label = document.createElement('span');
+                label.className = 'value';
+                label.textContent = value;
+                bar.appendChild(label);
+                arrayContainer.appendChild(bar);
+            });
+        }
+
+        function parseInput() {
+            const values = arrayInput.value
+                .split(',')
+                .map(item => item.trim())
+                .filter(item => item !== '')
+                .map(Number);
+            if (values.some(isNaN)) {
+                alert('請輸入正確的數字，使用逗號分隔。');
+                return null;
+            }
+            return values;
+        }
+
+        function randomArray() {
+            const size = 8;
+            const result = [];
+            for (let i = 0; i < size; i++) {
+                result.push(Math.floor(Math.random() * 90) + 1);
+            }
+            return result;
+        }
+
+        function recordStep(array, highlights, message) {
+            animationSteps.push({ array: [...array], highlights: { ...highlights }, message });
+        }
+
+        function mergeSort(array, left, right) {
+            if (right - left <= 1) {
+                return array.slice(left, right);
+            }
+            const mid = Math.floor((left + right) / 2);
+            recordStep(array, { comparing: [left, mid], message: `分割範圍 [${left}, ${right}) 成左右兩半` }, `分割範圍 [${left}, ${right}) 成左右兩半`);
+            const leftSorted = mergeSort(array, left, mid);
+            const rightSorted = mergeSort(array, mid, right);
+            const merged = [];
+            let i = 0;
+            let j = 0;
+            while (i < leftSorted.length && j < rightSorted.length) {
+                const compareLeft = left + i;
+                const compareRight = mid + j;
+                const globalIndex = left + merged.length;
+                recordStep(array, { comparing: [compareLeft, compareRight], merging: [globalIndex] }, `比較 ${leftSorted[i]} 和 ${rightSorted[j]}，決定下一個放入位置`);
+                if (leftSorted[i] <= rightSorted[j]) {
+                    merged.push(leftSorted[i]);
+                    i += 1;
+                } else {
+                    merged.push(rightSorted[j]);
+                    j += 1;
+                }
+            }
+            while (i < leftSorted.length) {
+                merged.push(leftSorted[i]);
+                i += 1;
+            }
+            while (j < rightSorted.length) {
+                merged.push(rightSorted[j]);
+                j += 1;
+            }
+            for (let k = 0; k < merged.length; k++) {
+                array[left + k] = merged[k];
+            }
+            recordStep(array, { sorted: Array.from({ length: merged.length }, (_, idx) => left + idx) }, `合併完成 [${left}, ${right}) 變成 [${merged.join(', ')}]`);
+            return merged;
+        }
+
+        async function playAnimation() {
+            for (let step of animationSteps) {
+                if (!isRunning) return;
+                renderArray(step.array, step.highlights);
+                stepInfo.textContent = step.message || '正在進行合併排序...';
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+            if (isRunning) {
+                stepInfo.textContent = '排序完成，已將陣列合併成有序結果。';
+                renderArray(currentArray, { sorted: currentArray.map((_, idx) => idx) });
+            }
+            isRunning = false;
+        }
+
+        function startSorting() {
+            const values = parseInput();
+            if (!values) return;
+            currentArray = [...values];
+            animationSteps = [];
+            isRunning = true;
+            stepInfo.textContent = '開始合併排序...';
+            renderArray(currentArray, {});
+            mergeSort(currentArray, 0, currentArray.length);
+            playAnimation();
+        }
+
+        randomBtn.addEventListener('click', () => {
+            currentArray = randomArray();
+            arrayInput.value = currentArray.join(',');
+            renderArray(currentArray);
+            stepInfo.textContent = '已生成隨機陣列。';
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (isRunning) return;
+            startSorting();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            if (isRunning) return;
+            const values = parseInput();
+            if (values) {
+                currentArray = [...values];
+                renderArray(currentArray);
+                stepInfo.textContent = '已重置陣列。';
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const initialValues = parseInput();
+            if (initialValues) {
+                currentArray = initialValues;
+                renderArray(currentArray);
+            }
+        });
+    </script>
+</body>
+</html>
