@@ -237,6 +237,12 @@
                 </div>
 
                 <div class="card">
+                    <h3>排序統計</h3>
+                    <p><strong>已執行步數：</strong> <span id="mergeStepCount">0</span> / <span id="mergeTotalSteps">0</span></p>
+                    <p><strong>已耗時間：</strong> <span id="mergeElapsedTime">0 ms</span></p>
+                </div>
+
+                <div class="card">
                     <h3>教學步驟</h3>
                     <p>1. 分割：不斷將陣列一分為二。</p>
                     <p>2. 排序：將每個小陣列視為已排序。</p>
@@ -260,6 +266,10 @@
 
         let currentArray = [];
         let animationSteps = [];
+        let stepCount = 0;
+        let totalSteps = 0;
+        let startTime = null;
+        let elapsedTime = 0;
         let isRunning = false;
 
         function renderArray(array, highlights = {}) {
@@ -284,6 +294,12 @@
                 bar.appendChild(label);
                 arrayContainer.appendChild(bar);
             });
+        }
+
+        function updateStats() {
+            document.getElementById('mergeStepCount').textContent = stepCount;
+            document.getElementById('mergeTotalSteps').textContent = totalSteps;
+            document.getElementById('mergeElapsedTime').textContent = `${Math.round(elapsedTime)} ms`;
         }
 
         function parseInput() {
@@ -354,13 +370,17 @@
         async function playAnimation() {
             for (let step of animationSteps) {
                 if (!isRunning) return;
+                stepCount += 1;
                 renderArray(step.array, step.highlights);
                 stepInfo.textContent = step.message || '正在進行合併排序...';
+                updateStats();
                 await new Promise(resolve => setTimeout(resolve, 800));
             }
             if (isRunning) {
+                elapsedTime = performance.now() - startTime;
                 stepInfo.textContent = '排序完成，已將陣列合併成有序結果。';
                 renderArray(currentArray, { sorted: currentArray.map((_, idx) => idx) });
+                updateStats();
             }
             isRunning = false;
         }
@@ -370,10 +390,16 @@
             if (!values) return;
             currentArray = [...values];
             animationSteps = [];
+            stepCount = 0;
+            totalSteps = 0;
+            elapsedTime = 0;
+            startTime = performance.now();
             isRunning = true;
             stepInfo.textContent = '開始合併排序...';
             renderArray(currentArray, {});
             mergeSort(currentArray, 0, currentArray.length);
+            totalSteps = animationSteps.length;
+            updateStats();
             playAnimation();
         }
 

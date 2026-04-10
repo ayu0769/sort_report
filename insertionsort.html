@@ -265,6 +265,14 @@
                         <div class="stat-label">當前位置</div>
                         <div class="stat-value" id="current">0</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-label">已執行步數</div>
+                        <div class="stat-value" id="stepCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">已耗時間</div>
+                        <div class="stat-value" id="elapsedTime">0 ms</div>
+                    </div>
                 </div>
             </div>
 
@@ -318,6 +326,9 @@
         let j = 0;
         let comparisons = 0;
         let insertions = 0;
+        let stepCount = 0;
+        let startTime = null;
+        let elapsedTime = 0;
         let isAutoPlaying = false;
         let autoPlayTimer = null;
 
@@ -337,9 +348,14 @@
         }
 
         function updateStats() {
+            if (startTime !== null) {
+                elapsedTime = performance.now() - startTime;
+            }
             document.getElementById('comparisons').textContent = comparisons;
             document.getElementById('insertions').textContent = insertions;
             document.getElementById('current').textContent = i;
+            document.getElementById('stepCount').textContent = stepCount;
+            document.getElementById('elapsedTime').textContent = `${Math.round(elapsedTime)} ms`;
         }
 
         function nextStep(onComplete = null) {
@@ -350,6 +366,11 @@
                 if (onComplete) onComplete();
                 return;
             }
+
+            if (startTime === null) {
+                startTime = performance.now();
+            }
+            stepCount += 1;
 
             if (j >= 0 && array[j] > array[j + 1]) {
                 // 比較並交換
@@ -433,12 +454,18 @@
             j = 0;
             comparisons = 0;
             insertions = 0;
+            stepCount = 0;
+            startTime = null;
+            elapsedTime = 0;
             createBars();
             document.getElementById('stepInfo').innerHTML = '準備就緒，已重新開始';
             updateStats();
         }
 
         function loadNumbers() {
+            stepCount = 0;
+            startTime = null;
+            elapsedTime = 0;
             const input = document.getElementById('numberInput').value;
             const numbers = input.split(',').map(n => {
                 const num = parseInt(n.trim());

@@ -270,6 +270,14 @@
                         <div class="stat-label">分割次數</div>
                         <div class="stat-value" id="partitions">0</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-label">已執行步數</div>
+                        <div class="stat-value" id="stepCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">已耗時間</div>
+                        <div class="stat-value" id="elapsedTime">0 ms</div>
+                    </div>
                 </div>
             </div>
 
@@ -327,6 +335,9 @@
         let comparisons = 0;
         let swaps = 0;
         let partitions = 0;
+        let stepCount = 0;
+        let startTime = null;
+        let elapsedTime = 0;
         let isAutoPlaying = false;
         let autoPlayTimer = null;
         let highlights = { compare: [], pivot: null, swap: [] };
@@ -355,9 +366,14 @@
         }
 
         function updateStats() {
+            if (startTime !== null) {
+                elapsedTime = performance.now() - startTime;
+            }
             document.getElementById('comparisons').textContent = comparisons;
             document.getElementById('swaps').textContent = swaps;
             document.getElementById('partitions').textContent = partitions;
+            document.getElementById('stepCount').textContent = stepCount;
+            document.getElementById('elapsedTime').textContent = `${Math.round(elapsedTime)} ms`;
         }
 
         function recordStep(type, details) {
@@ -409,8 +425,14 @@
                 isAutoPlaying = false;
                 document.getElementById('autoPlayBtn').style.display = 'inline-block';
                 document.getElementById('pauseBtn').style.display = 'none';
+                updateStats();
                 return;
             }
+
+            if (startTime === null) {
+                startTime = performance.now();
+            }
+            stepCount += 1;
 
             resetHighlights();
             const step = steps[currentStep++];
@@ -471,6 +493,9 @@
             comparisons = 0;
             swaps = 0;
             partitions = 0;
+            stepCount = 0;
+            startTime = null;
+            elapsedTime = 0;
             resetHighlights();
             generateQuickSortSteps([...array]);
             createBars();
@@ -479,6 +504,9 @@
         }
 
         function loadNumbers() {
+            stepCount = 0;
+            startTime = null;
+            elapsedTime = 0;
             const input = document.getElementById('numberInput').value;
             const numbers = input.split(',').map(n => {
                 const num = parseInt(n.trim());
